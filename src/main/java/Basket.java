@@ -18,6 +18,7 @@ public class Basket {
     }
 
     public void printCart() {
+        totalPrice = 0;
         System.out.println("Ваша корзина:");
         for (int i = 0; i < products.length; i++) {
             if (amountOfProductsInBasket[i] != 0) {
@@ -26,34 +27,39 @@ public class Basket {
             }
         }
         System.out.println("Итого: " + totalPrice + " рублей");
-        totalPrice = 0;
     }
 
-    public void saveTxt(File textFile) throws IOException {
-        BufferedWriter buff = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(textFile)));
-        for (String product : products) {
-            buff.write(product + ";");
+    public void saveTxt(File textFile) {
+        try (BufferedWriter buff = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(textFile)))) {
+            for (String product : products) {
+                buff.write(product + ";");
+            }
+            buff.write("\n");
+            for (int price : prices) {
+                buff.write(price + ";");
+            }
+            buff.write("\n");
+            for (int j : amountOfProductsInBasket) {
+                buff.write(j + ";");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        buff.write("\n");
-        for (int price : prices) {
-            buff.write(price + ";");
-        }
-        buff.write("\n");
-        for (int j : amountOfProductsInBasket) {
-            buff.write(j + ";");
-        }
-        buff.close();
     }
 
-    static Basket loadFromTxtFile(File textFile) throws IOException {
-        BufferedReader buff = new BufferedReader(new InputStreamReader(new FileInputStream(textFile)));
+    public static Basket loadFromTxtFile(File textFile) {
         String productArr = " ";
         String pricesString = " ";
         String amountString = " ";
-        while (buff.ready()) {
-            productArr = buff.readLine();
-            pricesString = buff.readLine();
-            amountString = buff.readLine();
+        try (BufferedReader buff = new BufferedReader(new InputStreamReader(new FileInputStream(textFile)))) {
+            while (buff.ready()) {
+                productArr = buff.readLine();
+                pricesString = buff.readLine();
+                amountString = buff.readLine();
+                buff.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         String[] products = productArr.split(";");
         String[] pricesArr = pricesString.split(";");
@@ -66,7 +72,6 @@ public class Basket {
         for (int i = 0; i < amount.length; i++) {
             amount[i] = Integer.parseInt(amountArr[i]);
         }
-        buff.close();
         Basket basket = new Basket(products, prices);
         basket.amountOfProductsInBasket = amount;
         return basket;
@@ -74,5 +79,9 @@ public class Basket {
 
     public String[] getProducts() {
         return products;
+    }
+
+    public int[] getPrices() {
+        return prices;
     }
 }
